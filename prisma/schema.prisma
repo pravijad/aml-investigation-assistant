@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  analyst
+  supervisor
+  admin
+}
+
+enum RiskRating {
+  low
+  medium
+  high
+}
+
+enum AlertStatus {
+  new
+  in_review
+  info_requested
+  escalated
+  closed_false_positive
+  closed_after_review
+  report_advised
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(analyst)
+  createdAt    DateTime @default(now())
+  alerts       Alert[]
+}
+
+model Customer {
+  id                    String     @id @default(cuid())
+  reference             String     @unique
+  occupation            String
+  riskRating            RiskRating @default(low)
+  expectedMonthlyVolume Decimal    @db.Decimal(14, 2)
+  onboardedAt           DateTime
+  accounts              Account[]
+  alerts                Alert[]
+}
+
+model Account {
+  id            String        @id @default(cuid())
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  accountNumber String        @unique
+  type          String
+  openedAt      DateTime
+  transactions  Transaction[]
+}
+
+model Transaction {
+  id                  String   @id @default(cuid())
+  accountId           String
+  account             Account  @relation(fields: [accountId], references: [id])
+  occurredAt          DateTime
+  amount              Decimal  @db.Decimal(14, 2)
+  direction           String
+  channel             String
+  counterparty        String?
+  counterpartyCountry String?
+  description         String?
+
+  @@index([accountId, occurredAt])
+}
+
+model Alert {
+  id           String      @id @default(cuid())
+  customerId   String
+  customer     Customer    @relation(fields: [customerId], references: [id])
+  ruleCode     String
+  riskScore    Int
+  status       AlertStatus @default(new)
+  assignedToId String?
+  assignedTo   User?       @relation(fields: [assignedToId], references: [id])
+  triggeredAt  DateTime    @default(now())
+}
