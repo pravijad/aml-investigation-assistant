@@ -2,9 +2,9 @@
 // Everything here is fake. Run with: npm run db:seed
 
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { faker } from "@faker-js/faker";
 import { PrismaClient } from "../src/generated/prisma/client";
-import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -179,17 +179,64 @@ const patternNames = Object.keys(patterns) as PatternName[];
 
 async function main() {
   console.log("Clearing old data...");
+  await prisma.auditLog.deleteMany();
+  await prisma.alertTransaction.deleteMany();
   await prisma.alert.deleteMany();
   await prisma.transaction.deleteMany();
   await prisma.account.deleteMany();
   await prisma.customer.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.rule.deleteMany();
+
+  console.log("Creating demo users and detection rules...");
+  // Demo accounts for local testing only.
   const passwordHash = await bcrypt.hash("Password123!", 10);
   await prisma.user.createMany({
     data: [
       { email: "analyst@caselens.test", name: "Alex Analyst", role: "analyst", passwordHash },
       { email: "supervisor@caselens.test", name: "Sam Supervisor", role: "supervisor", passwordHash },
       { email: "admin@caselens.test", name: "Ari Admin", role: "admin", passwordHash },
+    ],
+  });
+
+  await prisma.rule.createMany({
+    data: [
+      {
+        code: "STRUCTURING",
+        name: "Structuring",
+        description: "Several cash deposits just under the $10,000 reporting threshold within a few days.",
+        params: { minAmount: 8000, maxAmount: 9999.99, minCount: 3, windowDays: 7 },
+        baseScore: 40,
+      },
+      {
+        code: "RAPID_MOVEMENT",
+        name: "Rapid movement",
+        description: "A large amount comes in and most of it is sent out again within 48 hours.",
+        params: { minInAmount: 5000, outRatio: 0.8, windowHours: 48 },
+        baseScore: 35,
+      },
+      {
+        code: "HIGH_RISK_JURISDICTION",
+        name: "High-risk jurisdiction",
+        description: "Money sent to or received from a country on the high-risk list.",
+        // Illustrative codes for synthetic data; a real list comes from compliance.
+        params: { countries: ["IR", "KP", "MM"] },
+        baseScore: 30,
+      },
+      {
+        code: "UNUSUAL_VOLUME",
+        name: "Unusual volume",
+        description: "Money received in 30 days is far above the customer's 6-month average.",
+        params: { multiplier: 3, minTotal: 10000, baselineMonths: 6, recentMonths: 2 },
+        baseScore: 25,
+      },
+      {
+        code: "DORMANT_REACTIVATED",
+        name: "Dormant account reactivated",
+        description: "No activity for 180 days, then a burst of transactions.",
+        params: { dormantDays: 180, minAmount: 5000, windowDays: 7 },
+        baseScore: 25,
+      },
     ],
   });
 

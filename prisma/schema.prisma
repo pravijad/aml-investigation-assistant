@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma schema for the AML Alert Investigation Assistant.
 
 generator client {
   provider = "prisma-client"
@@ -37,13 +33,14 @@ enum AlertStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String     @id @default(cuid())
+  email        String     @unique
   passwordHash String
   name         String
-  role         Role     @default(analyst)
-  createdAt    DateTime @default(now())
+  role         Role       @default(analyst)
+  createdAt    DateTime   @default(now())
   alerts       Alert[]
+  auditLogs    AuditLog[]
 }
 
 model Customer {
@@ -68,28 +65,75 @@ model Account {
 }
 
 model Transaction {
-  id                  String   @id @default(cuid())
+  id                  String             @id @default(cuid())
   accountId           String
-  account             Account  @relation(fields: [accountId], references: [id])
+  account             Account            @relation(fields: [accountId], references: [id])
   occurredAt          DateTime
-  amount              Decimal  @db.Decimal(14, 2)
+  amount              Decimal            @db.Decimal(14, 2)
   direction           String
   channel             String
   counterparty        String?
   counterpartyCountry String?
   description         String?
+  alertLinks          AlertTransaction[]
 
   @@index([accountId, occurredAt])
 }
 
+model Rule {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String
+  enabled     Boolean  @default(true)
+  params      Json
+  baseScore   Int
+  updatedAt   DateTime @updatedAt
+  alerts      Alert[]
+}
+
 model Alert {
-  id           String      @id @default(cuid())
-  customerId   String
-  customer     Customer    @relation(fields: [customerId], references: [id])
-  ruleCode     String
-  riskScore    Int
-  status       AlertStatus @default(new)
-  assignedToId String?
-  assignedTo   User?       @relation(fields: [assignedToId], references: [id])
-  triggeredAt  DateTime    @default(now())
+  id             String             @id @default(cuid())
+  customerId     String
+  customer       Customer           @relation(fields: [customerId], references: [id])
+  ruleCode       String
+  rule           Rule               @relation(fields: [ruleCode], references: [code])
+  riskScore      Int
+  status         AlertStatus        @default(new)
+  summary        String
+  amountInvolved Decimal            @db.Decimal(14, 2)
+  windowStart    DateTime
+  windowEnd      DateTime
+  dedupeKey      String             @unique
+  assignedToId   String?
+  assignedTo     User?              @relation(fields: [assignedToId], references: [id])
+  triggeredAt    DateTime           @default(now())
+  decidedAt      DateTime?
+  transactions   AlertTransaction[]
+
+  @@index([status, riskScore])
+  @@index([customerId])
+}
+
+model AlertTransaction {
+  alertId       String
+  alert         Alert       @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@id([alertId, transactionId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
 }
