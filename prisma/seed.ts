@@ -180,6 +180,7 @@ const patternNames = Object.keys(patterns) as PatternName[];
 async function main() {
   console.log("Clearing old data...");
   await prisma.auditLog.deleteMany();
+  await prisma.investigation.deleteMany();
   await prisma.alertTransaction.deleteMany();
   await prisma.alert.deleteMany();
   await prisma.transaction.deleteMany();

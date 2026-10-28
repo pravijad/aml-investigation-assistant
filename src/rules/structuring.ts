@@ -33,7 +33,7 @@ export const structuring: RuleDefinition = {
           amountInvolved: total,
           windowStart: group[0].occurredAt,
           windowEnd: group[group.length - 1].occurredAt,
-          summary: `${group.length} cash deposits between ${nzd(p.minAmount)} and ${nzd(p.maxAmount)} within ${p.windowDays} days, totalling ${nzd(total)}.`,
+          summary: `${group.length} cash deposits of ${nzd(p.minAmount)} or more, each just under ${nzd(Math.ceil(p.maxAmount))}, within ${p.windowDays} days, totalling ${nzd(total)}.`,
           dedupeKey: `STRUCTURING:${customerId}:${group[0].id}`,
         });
         i = j + 1;

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import {
   DAY,
+  OPEN_STATUSES,
   STATUS_LABELS,
   formatDate,
   formatDateTime,
@@ -11,17 +12,18 @@ import {
   riskBadgeClass,
 } from "@/lib/format";
 import { assignToMe } from "../actions";
+import { InvestigationPanel } from "./investigation-panel";
 
 export default async function AlertDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ taken?: string }>;
+  searchParams: Promise<{ taken?: string; cannot?: string }>;
 }) {
   const user = await requireUser();
   const { id } = await params;
-  const { taken } = await searchParams;
+  const { taken, cannot } = await searchParams;
 
   const alert = await prisma.alert.findUnique({
     where: { id },
@@ -59,9 +61,29 @@ export default async function AlertDetailPage({
   const canAssign =
     (user.role === "analyst" || user.role === "supervisor") && !alert.assignedToId && alert.status === "new";
 
+  const isWorker = user.role === "analyst" || user.role === "supervisor";
+  const canInvestigate =
+    isWorker &&
+    alert.status !== "new" &&
+    OPEN_STATUSES.includes(alert.status) &&
+    (alert.assignedToId === user.userId || user.role === "supervisor");
+  const cannotReason = !isWorker
+    ? "Only analysts and supervisors can run investigations."
+    : alert.status === "new"
+      ? "Assign this alert to yourself to run an investigation."
+      : !OPEN_STATUSES.includes(alert.status)
+        ? "This alert is closed."
+        : "This alert is assigned to someone else.";
+
   return (
     <div className="space-y-6">
       <Link href="/alerts" className="text-sm text-blue-700 hover:underline">← Back to alerts</Link>
+
+      {cannot && (
+        <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          You can&apos;t run an investigation on this alert right now.
+        </p>
+      )}
 
       {taken && (
         <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -92,6 +114,13 @@ export default async function AlertDetailPage({
           </form>
         )}
       </div>
+
+      <InvestigationPanel
+        alertId={alert.id}
+        customerId={alert.customerId}
+        canInvestigate={canInvestigate}
+        cannotReason={canInvestigate ? null : cannotReason}
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="space-y-3 rounded-lg border border-gray-200 bg-white p-5">
