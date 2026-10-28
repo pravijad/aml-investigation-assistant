@@ -4,6 +4,7 @@
 import "dotenv/config";
 import { faker } from "@faker-js/faker";
 import { PrismaClient } from "../src/generated/prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -182,6 +183,15 @@ async function main() {
   await prisma.transaction.deleteMany();
   await prisma.account.deleteMany();
   await prisma.customer.deleteMany();
+  await prisma.user.deleteMany();
+  const passwordHash = await bcrypt.hash("Password123!", 10);
+  await prisma.user.createMany({
+    data: [
+      { email: "analyst@caselens.test", name: "Alex Analyst", role: "analyst", passwordHash },
+      { email: "supervisor@caselens.test", name: "Sam Supervisor", role: "supervisor", passwordHash },
+      { email: "admin@caselens.test", name: "Ari Admin", role: "admin", passwordHash },
+    ],
+  });
 
   // Pick which customers get a planted pattern, two per rule.
   const suspicious = new Map<number, PatternName>();
