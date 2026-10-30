@@ -11,6 +11,7 @@ const Params = z.object({
 // A long quiet period, followed by a burst of activity.
 export const dormantReactivated: RuleDefinition = {
   code: "DORMANT_REACTIVATED",
+  paramsSchema: Params,
   evaluate({ customerId, transactions }, rawParams) {
     const p = Params.parse(rawParams);
     const matches: RuleMatch[] = [];

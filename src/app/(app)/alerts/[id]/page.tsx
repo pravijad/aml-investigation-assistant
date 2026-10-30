@@ -13,17 +13,18 @@ import {
 } from "@/lib/format";
 import { assignToMe } from "../actions";
 import { InvestigationPanel } from "./investigation-panel";
+import { DecisionPanel } from "./decision-panel";
 
 export default async function AlertDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ taken?: string; cannot?: string }>;
+  searchParams: Promise<{ taken?: string; cannot?: string; decided?: string; decisionError?: string }>;
 }) {
   const user = await requireUser();
   const { id } = await params;
-  const { taken, cannot } = await searchParams;
+  const { taken, cannot, decided, decisionError } = await searchParams;
 
   const alert = await prisma.alert.findUnique({
     where: { id },
@@ -120,6 +121,13 @@ export default async function AlertDetailPage({
         customerId={alert.customerId}
         canInvestigate={canInvestigate}
         cannotReason={canInvestigate ? null : cannotReason}
+      />
+
+      <DecisionPanel
+        alert={{ id: alert.id, status: alert.status, assignedToId: alert.assignedToId }}
+        user={user}
+        decided={!!decided}
+        decisionError={decisionError}
       />
 
       <div className="grid gap-6 lg:grid-cols-3">

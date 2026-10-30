@@ -49,6 +49,7 @@ model User {
   alerts         Alert[]
   auditLogs      AuditLog[]
   investigations Investigation[]
+  decisions      CaseDecision[]
 }
 
 model Customer {
@@ -119,6 +120,7 @@ model Alert {
   decidedAt      DateTime?
   transactions   AlertTransaction[]
   investigations Investigation[]
+  decisions      CaseDecision[]
 
   @@index([status, riskScore])
   @@index([customerId])
@@ -179,4 +181,22 @@ model InvestigationStep {
   outputSummary   String
   isError         Boolean       @default(false)
   createdAt       DateTime      @default(now())
+}
+
+model CaseDecision {
+  id              String      @id @default(cuid())
+  alertId         String
+  alert           Alert       @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  decidedById     String
+  decidedBy       User        @relation(fields: [decidedById], references: [id])
+  decision        String
+  reason          String
+  fromStatus      AlertStatus
+  toStatus        AlertStatus
+  finalNotes      String?
+  investigationId String?
+  agentDraft      Json? // the agent's draft at the time of the decision, kept unchanged
+  createdAt       DateTime    @default(now())
+
+  @@index([alertId, createdAt])
 }

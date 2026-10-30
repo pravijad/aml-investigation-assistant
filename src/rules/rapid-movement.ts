@@ -11,6 +11,7 @@ const Params = z.object({
 // A large amount comes in and most of it leaves again quickly.
 export const rapidMovement: RuleDefinition = {
   code: "RAPID_MOVEMENT",
+  paramsSchema: Params,
   evaluate({ customerId, transactions }, rawParams) {
     const p = Params.parse(rawParams);
     const matches: RuleMatch[] = [];

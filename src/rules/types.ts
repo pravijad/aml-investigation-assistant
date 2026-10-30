@@ -1,3 +1,5 @@
+import type { ZodType } from "zod";
+
 export type RuleTx = {
   id: string;
   occurredAt: Date;
@@ -25,5 +27,6 @@ export type RuleMatch = {
 
 export type RuleDefinition = {
   code: string;
+  paramsSchema: ZodType; // used to check settings edited on the Admin page
   evaluate: (context: RuleContext, params: unknown) => RuleMatch[];
 };

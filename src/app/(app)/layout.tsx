@@ -9,7 +9,8 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const user = await requireUser();
-  const canSeeDashboard = user.role === "supervisor" || user.role === "admin";
+  const isSupervisor = user.role === "supervisor";
+  const canOversee = user.role === "supervisor" || user.role === "admin";
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -17,12 +18,12 @@ export default async function AppLayout({
         <nav className="flex items-center gap-6 text-sm">
           <span className="text-base font-semibold">CaseLens</span>
           <Link href="/alerts" className="hover:underline">Alerts</Link>
-          {canSeeDashboard && (
-            <Link href="/dashboard" className="hover:underline">Dashboard</Link>
+          {isSupervisor && (
+            <Link href="/alerts?status=escalated" className="hover:underline">Escalated</Link>
           )}
-          {user.role === "admin" && (
-            <Link href="/admin" className="hover:underline">Admin</Link>
-          )}
+          {canOversee && <Link href="/dashboard" className="hover:underline">Dashboard</Link>}
+          {canOversee && <Link href="/audit" className="hover:underline">Audit log</Link>}
+          {user.role === "admin" && <Link href="/admin" className="hover:underline">Admin</Link>}
         </nav>
         <div className="flex items-center gap-4 text-sm">
           <span>

@@ -14,6 +14,7 @@ const PERIOD = 30 * DAY;
 // Money received in a recent 30-day period is far above the customer's usual level.
 export const unusualVolume: RuleDefinition = {
   code: "UNUSUAL_VOLUME",
+  paramsSchema: Params,
   evaluate({ customerId, transactions, now }, rawParams) {
     const p = Params.parse(rawParams);
 

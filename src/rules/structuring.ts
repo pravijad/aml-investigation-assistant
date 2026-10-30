@@ -12,6 +12,7 @@ const Params = z.object({
 // Several cash deposits just under the reporting threshold, close together.
 export const structuring: RuleDefinition = {
   code: "STRUCTURING",
+  paramsSchema: Params,
   evaluate({ customerId, transactions }, rawParams) {
     const p = Params.parse(rawParams);
     const deposits = transactions.filter(

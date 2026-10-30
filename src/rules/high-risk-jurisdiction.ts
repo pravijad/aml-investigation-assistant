@@ -9,6 +9,7 @@ const Params = z.object({
 // Money sent to or received from a country on the admin's high-risk list.
 export const highRiskJurisdiction: RuleDefinition = {
   code: "HIGH_RISK_JURISDICTION",
+  paramsSchema: Params,
   evaluate({ customerId, transactions }, rawParams) {
     const p = Params.parse(rawParams);
     const list = new Set(p.countries.map((c) => c.toUpperCase()));
