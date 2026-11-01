@@ -90,7 +90,7 @@ export default async function DashboardPage() {
         <Card
           label="Agreed with the agent"
           value={compared ? `${Math.round((agreed / compared) * 100)}%` : "—"}
-          note={`${compared} decisions made after an investigation`}
+          note={`${compared} decision${compared === 1 ? "" : "s"} made after an investigation`}
         />
       </div>
 
