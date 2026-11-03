@@ -192,7 +192,7 @@ async function main() {
 
   console.log("Creating demo users and detection rules...");
   // Demo accounts for local testing only.
-  const passwordHash = await bcrypt.hash("Password123!", 10);
+  const passwordHash = await bcrypt.hash("LittleStego@2104", 10);
   await prisma.user.createMany({
     data: [
       { email: "analyst@caselens.test", name: "Alex Analyst", role: "analyst", passwordHash },
