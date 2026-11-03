@@ -5,8 +5,11 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { faker } from "@faker-js/faker";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const prisma = new PrismaClient({ adapter });
+
 
 // The same seed gives the same data every run, which makes testing easier.
 faker.seed(42);
