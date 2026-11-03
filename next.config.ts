@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: false,
   partialPrefetching: false,
+  outputFileTracingIncludes: {
+    "/**": ["./src/generated/prisma/**/*"],
+  },
   turbopack: {
     rules: {
       "*.css": {
