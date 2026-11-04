@@ -4,6 +4,10 @@
 
 Banks raise anti-money-laundering (AML) alerts on suspicious transactions, and analysts spend a long time gathering evidence for each one. CaseLens raises alerts from transparent rules, then lets an AI agent gather the evidence with read-only tools and draft a case summary in which **every claim links to a real transaction**. A human analyst always makes the decision, and every step is audited.
 
+**[Try the live demo →](https://aml-investigation-assistant.vercel.app)**
+
+Sign in with any of the [demo accounts](#demo-accounts). The demo is shared by everyone who visits, so you may see alerts that others have already worked, and the data is reset from time to time. The agent runs in fake mode in the demo, so its drafts are written by code rather than AI.
+
 > **Portfolio project. Synthetic data only.** CaseLens uses generated, fictional customers and transactions. It isn't connected to any bank and doesn't file reports with regulators.
 
 ![Alert page with an agent draft](docs/screenshots/alert-investigation.png)
