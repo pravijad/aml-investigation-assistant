@@ -19,7 +19,7 @@ export async function investigateWithFake(context: AgentContext, recordStep: Rec
   await recordStep("compute_baseline", { months: 6 }, `Baseline: ${baseline.averageMonthlyIn} in per month`);
 
   const past = await getPastAlerts(context);
-  await recordStep("get_past_alerts", {}, `${past.count} previous alerts`);
+  await recordStep("get_past_alerts", {}, `${past.count} previous alert${past.count === 1 ? "" : "s"}`);
 
   const mitigating: InvestigationResult["mitigatingFactors"] = [];
   if (profile.riskRating === "low" && past.count === 0) {

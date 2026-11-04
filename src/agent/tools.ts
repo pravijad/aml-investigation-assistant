@@ -198,7 +198,7 @@ export async function runTool(name: string, input: unknown, context: AgentContex
     }
     case "get_past_alerts": {
       const output = await getPastAlerts(context);
-      return { output, summary: `${output.count} previous alerts` };
+      return { output, summary: `${output.count} previous alert${output.count === 1 ? "" : "s"}` };
     }
     case "check_counterparties": {
       const output = await checkCounterparties(context);
